@@ -93,13 +93,14 @@ class ClassificationNetwork(torch.nn.Module):
         # 현재 padding=0, dilation=1이므로 출력 한 변은
         # floor((96 - 5) / 4) + 1 = 23입니다. 즉 (B, 8, 23, 23)이 됩니다.
         self.conv = torch.nn.Sequential(
-            torch.nn.Conv2d(3, 8, kernel_size=5, stride=4),
-            # 음수는 0으로 바꾸는 활성화 함수입니다. 텐서 크기는 유지합니다.
-            # 비선형 변환을 넣어 여러 층으로 더 복잡한 관계를 학습할 수 있게 합니다.
-            torch.nn.ReLU(),
-            # 각 채널의 공간 특징을 평균으로 요약하여 4×4로 만듭니다.
-            # 입력 공간 크기가 달라도 출력은 (B, 8, 4, 4)로 맞춥니다.
-            # 채널 수는 바꾸지 않으며, 너무 작게 요약하면 세부 정보를 잃을 수 있습니다.
+            torch.nn.Conv2d(3, 16, kernel_size=5, stride=2, padding=2),
+            torch.nn.BatchNorm2d(16), torch.nn.ReLU(),
+            torch.nn.Conv2d(16, 32, kernel_size=3, stride=2, padding=1),
+            torch.nn.BatchNorm2d(32), torch.nn.ReLU(),
+            torch.nn.Conv2d(32, 64, kernel_size=3, stride=2, padding=1),
+            torch.nn.BatchNorm2d(64), torch.nn.ReLU(),
+            torch.nn.Conv2d(64, 64, kernel_size=3, stride=1, padding=1),
+            torch.nn.BatchNorm2d(64), torch.nn.ReLU(),
             MPSCompatibleAdaptiveAvgPool2d((4, 4)),
         )
         #
@@ -112,7 +113,10 @@ class ClassificationNetwork(torch.nn.Module):
         # 학습의 CrossEntropyLoss가 logits를 받으므로 마지막에 Softmax를 넣지 마세요.
         # 추론에서는 가장 큰 점수의 행동을 선택합니다.
         self.fc = torch.nn.Sequential(
-            torch.nn.Linear(8 * 4 * 4 + 7, self.n_classes),
+            torch.nn.Linear(64 * 4 * 4 + 7, 128),
+            torch.nn.ReLU(),
+            torch.nn.Dropout(0.3),
+            torch.nn.Linear(128, self.n_classes),
         )
         #
         # [수정할 때 확인할 것]

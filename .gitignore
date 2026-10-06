@@ -31,7 +31,7 @@ Thumbs.db
 .env
 
 # Generated models (keep the supplied baseline)
-models/*.pth
+*/models/*
 !models/baseline.pth
 
 .github
