@@ -1,0 +1,18 @@
+# 과제1에서 설치한 환경을 그대로 사용합니다. 경로는 assignment2/ 기준입니다.
+language: kor
+inference_device: auto  # auto / cpu / cuda / mps
+collect:
+  model_path: latest  # 매 실행 시 최신 agent + 저장된 구조, 없으면 baseline
+  data_dir: data/collected
+  epsilon: 0.1  # 90% 모델의 최선 행동 / 10% 무작위 행동 (0~1)
+train:
+  data_dir: data  # 제공 데이터와 직접 수집한 데이터 모두 사용
+  epochs: 5  # 매 epoch마다 모든 완료된 데이터 사용
+  device: auto  # auto / cuda / mps / cpu
+  num_workers: 2  # 병렬 파일 읽기 (0: 순차 읽기, 최대 16)
+  batch_size: 64
+  learning_rate: 0.00001
+  gamma: 0.99
+  conservative_weight: 0.1
+evaluate:
+  model_path: latest
